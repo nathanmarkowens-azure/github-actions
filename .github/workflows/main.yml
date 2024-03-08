@@ -1,0 +1,61 @@
+name: A workflow example
+
+on:
+  # # Trigger the workflow on push
+  push:
+  #   branches:
+  #     - main
+  # # Trigger the workflow on pull request
+  # pull_request:
+  #   branches:
+  #     - main
+  # # Also trigger on page_build, as well as release created events
+  # page_build:
+  # release:
+  #   types: # This configuration does not affect the page_build event above
+  #     - created
+  # # Trigger the workflow on a schedule
+  # schedule:
+  #  - cron: '*/15 * * * *' # This will run every 15 minutes
+  # # Configure workflows to run for manual events
+  # workflow_dispatch:
+  #  types: [opened, deleted]
+  #  inputs:
+  #    logLevel:
+  #    description: 'Log level'
+  #    required: true
+  #    default: 'warning'
+  #  tags:
+  #    description: 'Test scenario logs'
+  # # Configure workflows to run for webhook events
+  # check_run:
+  #  types: [rerequested, requested_action]
+  
+jobs:
+
+  # # Use conditional keywords
+  # prod-check:
+  #  if: github.ref == 'refs/heads/main'
+  #  runs-on: ubuntu-latest
+  # steps:
+  #  ...
+  # # Use specific versions of an action
+  # # Reference a specific commit
+  # - uses: actions/setup-node@c46424eee26de4078d34105d3de3cc4992202b1e
+  # # Reference the major version of a release
+  # - uses: actions/setup-node@v1
+  # # Reference a minor version of a release
+  # - uses: actions/setup-node@v1.2
+  # # Reference a branch
+  # - uses: actions/setup-node@main
+  
+  build:
+  
+    name: Hello world action
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ./action-a
+      with:
+        MY_NAME: "Nathan"
