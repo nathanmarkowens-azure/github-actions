@@ -5,7 +5,9 @@ runs:
   steps:
     - run: |
         cd web
-        dotnet restore \
-        dotnet build --configuration Release --no-restore \
-        dotnet test --no-restore --verbosity normal
+        dotnet restore
+      shell: bash
+    - run: dotnet build
+      shell: bash
+    - run: dotnet test
       shell: bash
