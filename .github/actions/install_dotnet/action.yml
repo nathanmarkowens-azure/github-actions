@@ -4,21 +4,8 @@ runs:
   using: "composite"
   steps:
     - run: |
-        sudo apt-get update \
-        && sudo apt-get install -y --no-install-recommends \
-        libc6 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu66 \
-        libssl1.1 \
-        libstdc++6 \
-        zlib1g
-      shell: bash
-    - run: wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-      shell: bash
-    - run: chmod +x ./dotnet-install.sh
-      shell: bash
-    - run: ./dotnet-install.sh
+        sudo apt-get update && \
+        sudo apt-get install -y dotnet-sdk-8.0
       shell: bash
     - run: dotnet --version
       shell: bash
