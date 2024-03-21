@@ -8,12 +8,10 @@ runs:
         dotnet restore
       shell: bash
     - run: |
-        ls
         cd web
-        dotnet build
+        dotnet build --no-restore
       shell: bash
     - run: |
-        ls
         cd web
-        dotnet test
+        dotnet test --no-restore --verbosity normal
       shell: bash
