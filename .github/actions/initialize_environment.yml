@@ -1,9 +1,9 @@
-name: Build
-
-description: This action lists all enviornment variables
+name: Initialize Environment
 
 runs:
   using: 'composite'
   steps:
-    - run: ${{ github.action_path}}/build/initialize_environment.sh
+    - run: printf "Environment variables:/n"
+      shell: bash
+    - run: env
       shell: bash
