@@ -1,0 +1,11 @@
+name: Build
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        cd web
+        dotnet restore \
+        dotnet build --configuration Release --no-restore \
+        dotnet test --no-restore --verbosity normal
+      shell: bash

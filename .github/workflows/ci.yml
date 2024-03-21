@@ -9,13 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: ls
       - uses: actions/checkout@v4
-      - run: ls
       - uses: ./.github/actions/initialize_environment
-      - uses: ./.github/actions/install_dotnet
-      - run: ls
-      - run: cd web
-      - run: ls
-      - run: dotnet build
-      - run: ls
+      - uses: ./.github/actions/install_tools
+      - uses: ./.github/actions/build
