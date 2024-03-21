@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/initialize_environment@v1
+      - uses: venminder-nathanowens/actions/initialize_environment@v1
