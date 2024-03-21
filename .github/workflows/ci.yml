@@ -9,9 +9,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/initialize_environment
+      - run: ls
       - uses: actions/checkout@v4
+      - run: ls
+      - uses: ./.github/actions/initialize_environment
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.3"
+      - run: ls
+      - run: cd web
+      - run: ls
+      - run: dotnet build
       - run: ls
