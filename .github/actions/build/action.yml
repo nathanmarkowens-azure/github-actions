@@ -8,12 +8,12 @@ runs:
         dotnet restore
       shell: bash
     - run: |
-        ls \
-        cd web \
+        ls
+        cd web
         dotnet build
       shell: bash
     - run: |
-        ls \
-        cd web \
+        ls
+        cd web
         dotnet test
       shell: bash
