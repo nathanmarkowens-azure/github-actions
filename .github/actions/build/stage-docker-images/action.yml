@@ -35,3 +35,4 @@ runs:
           echo "::set-output name=images_exist::false"
           echo "No images found tagged with $IMAGE_TAG."
         fi
+        exit 0
