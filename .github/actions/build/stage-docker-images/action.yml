@@ -35,4 +35,3 @@ runs:
           echo "images_exist=false" >> $GITHUB_OUTPUT
           echo "No images found tagged with $IMAGE_TAG."
         fi
-        exit 0

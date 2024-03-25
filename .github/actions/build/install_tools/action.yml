@@ -26,8 +26,10 @@ runs:
         . "$HOME/.asdf/completions/asdf.bash"
         printf "Terraform version: "
         terraform --version
-        printf "/nDocker version: "
+        printf "Docker version: "
         docker --version
-        printf '/n.NET version: '
+        printf '.NET version: '
         dotnet --version
+        printf 'Gzip version: '
+        gzip --version
       shell: bash
