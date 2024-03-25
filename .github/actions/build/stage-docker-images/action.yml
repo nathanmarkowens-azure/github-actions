@@ -12,11 +12,13 @@ runs:
       run: |
         # Assuming images are tagged with GITHUB_SHA
         COMMIT_SHA=${GITHUB_SHA:-$(git rev-parse HEAD)}
+        echo $COMMIT_SHA
         IMAGE_TAG=$COMMIT_SHA
+        echo $IMAGE_TAG
 
         # Check for images with the tag and count them
         IMAGE_COUNT=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | wc -l)
-
+        echo $IMAGE_COUNT
         # Proceed if images are found
         if [ $IMAGE_COUNT -gt 0 ]; then
           echo "Found images tagged with $IMAGE_TAG."
@@ -35,3 +37,4 @@ runs:
           echo "images_exist=false" >> $GITHUB_OUTPUT
           echo "No images found tagged with $IMAGE_TAG."
         fi
+        echo "complete"
