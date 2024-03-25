@@ -21,7 +21,8 @@ runs:
 
         # Check for images with the tag and count them
         echo "Checking for images tagged with $IMAGE_TAG..."
-        IMAGE_COUNT=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | wc -l)
+        #IMAGE_COUNT=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | wc -l)
+        IMAGE_COUNT=0
         echo "Found $IMAGE_COUNT images tagged with $IMAGE_TAG."
 
         # Proceed if images are found
