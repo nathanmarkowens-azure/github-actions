@@ -46,5 +46,6 @@ runs:
           echo "No images found tagged with $IMAGE_TAG."
         fi
 
+        exit 0
         # Disable bash debug mode
         set +x
