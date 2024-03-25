@@ -1,0 +1,18 @@
+name: "Stage IAC Directory"
+description: "Check for IAC directory and compress it if exists"
+outputs:
+  iac_exists:
+    description: "Indicates if the IAC directory exists"
+    value: ${{ steps.check_iac.outputs.iac_exists }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: check_iac
+      run: |
+        if [ -d "iac" ]; then
+          tar -czf iac.tgz iac
+          echo "::set-output name=iac_exists::true"
+        else
+          echo "::set-output name=iac_exists::false"
+        fi

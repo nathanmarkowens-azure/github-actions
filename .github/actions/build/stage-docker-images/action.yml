@@ -1,0 +1,37 @@
+name: "Stage Docker Images"
+description: "Saves Docker images tagged with the commit SHA to the docker-images staging directory"
+outputs:
+  images_exist:
+    description: "Indicates if the Docker images exist"
+    value: ${{ steps.check_images.outputs.images_exist }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: check_images
+      run: |
+        # Assuming images are tagged with GITHUB_SHA
+        COMMIT_SHA=${GITHUB_SHA:-$(git rev-parse HEAD)}
+        IMAGE_TAG=$COMMIT_SHA
+
+        # Check for images with the tag and count them
+        IMAGE_COUNT=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | wc -l)
+
+        # Proceed if images are found
+        if [ $IMAGE_COUNT -gt 0 ]; then
+          echo "Found images tagged with $IMAGE_TAG."
+          
+          # Create directory for Docker images
+          mkdir -p docker-images
+          
+          # Save each image to the directory in .tgz format
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | while read -r IMAGE; do
+            IMAGE_NAME=$(echo $IMAGE | tr ":" "_" | tr "/" "_")
+            docker save $IMAGE | gzip > "docker-images/${IMAGE_NAME}.tgz"
+            echo "Saved $IMAGE as docker-images/${IMAGE_NAME}.tgz"
+          done
+          echo "::set-output name=images_exist::true"
+        else
+          echo "::set-output name=images_exist::false"
+          echo "No images found tagged with $IMAGE_TAG."
+        fi

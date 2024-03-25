@@ -1,0 +1,26 @@
+name: "Script Runner"
+description: "Runs specified script or all scripts in a specified directory"
+inputs:
+  script:
+    description: "The script or directory to run (prebuild, build, postbuild)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+          SCRIPT_INPUT="./.github/scripts/${{ inputs.script }}"        if [ -f "$SCRIPT_INPUT.sh" ]; then
+          echo "Running script $SCRIPT_INPUT.sh"
+          bash "$SCRIPT_INPUT.sh"
+        elif [ -d "$SCRIPT_INPUT" ]; then
+          echo "Running all scripts in $SCRIPT_INPUT directory in alphabetical order"
+          for SCRIPT in "$SCRIPT_INPUT"/*.sh; do
+            if [ -f "$SCRIPT" ]; then
+              echo "Running script $SCRIPT"
+              bash "$SCRIPT"
+            fi
+          done
+        else
+          echo "No valid script or directory found for input '$SCRIPT_INPUT'. Nothing to run."
+        fi

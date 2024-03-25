@@ -1,0 +1,65 @@
+name: CI-CD
+
+on:
+  push:
+    branches:
+      - feature/workflows
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Initialize Environment
+        uses: ./.github/actions/build/initialize_environment
+      - name: Install Tools
+        uses: ./.github/actions/build/install_tools
+      - name: Run Prebuild scripts
+        uses: ./.github/actions/build/script-runner
+        with:
+          script: prebuild
+      - name: Run Build scripts
+        uses: ./.github/actions/build/script-runner
+        with:
+          script: build
+      - name: Run Postbuild scripts
+        uses: ./.github/actions/build/script-runner
+        with:
+          script: postbuild
+      - name: Run Stage scripts
+        uses: ./.github/actions/build/script-runner
+        with:
+          script: stage
+      - name: Stage Docker images
+        uses: ./.github/actions/build/stage-docker-images
+        id: stage_docker_images
+      - name: Upload Docker images artifact
+        if: steps.stage_docker_images.outputs.images_exist == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-images
+          path: docker-images/
+      - name: Stage IAC artifact
+        uses: ./github/actions/build/stage-iac-artifact
+        id: stage_iac_artifact
+      - name: Upload IAC artifact
+        if: steps.stage_iac_artifact.outputs.iac_exists == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: iac
+          path: iac/
+
+  approval:
+    needs: build
+    runs-on: "composite"
+    steps:
+      - shell: bash
+        run: echo 'Skipping Approval'
+
+  deploy:
+    needs: approval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy/initialize_environment
