@@ -24,7 +24,10 @@ runs:
       run: |
         . "$HOME/.asdf/asdf.sh"
         . "$HOME/.asdf/completions/asdf.bash"
+        printf "Terraform version: "
         terraform --version
+        printf "/nDocker version: "
         docker --version
+        printf '/n.NET version: '
         dotnet --version
       shell: bash

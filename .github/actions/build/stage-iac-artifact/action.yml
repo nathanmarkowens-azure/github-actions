@@ -12,7 +12,7 @@ runs:
       run: |
         if [ -d "iac" ]; then
           tar -czf iac.tgz iac
-          echo "::set-output name=iac_exists::true"
+          echo "iac_exists=true" >> $GITHUB_OUTPUT
         else
-          echo "::set-output name=iac_exists::false"
+          echo "iac_exists=false" >> $GITHUB_OUTPUT
         fi
