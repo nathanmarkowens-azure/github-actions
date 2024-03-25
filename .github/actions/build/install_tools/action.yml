@@ -2,15 +2,14 @@ name: Install Tools
 runs:
   using: "composite"
   steps:
-    - name: Install ASDF
+    - name: Install ASDF and Terraform
       run: |
         git config --global advice.detachedHead false
         git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0
+        echo ". $HOME/.asdf/asdf.sh" >> $HOME/.bashrc
+        echo ". $HOME/.asdf/completions/asdf.bash" >> $HOME/.bashrc
         . "$HOME/.asdf/asdf.sh"
         . "$HOME/.asdf/completions/asdf.bash"
-      shell: bash
-    - name: Install Terraform
-      run: |
         asdf plugin-add terraform https://github.com/asdf-community/asdf-hashicorp.git
         TERRAFORM_VERSION=$(asdf latest terraform)
         asdf install terraform $TERRAFORM_VERSION
@@ -21,12 +20,11 @@ runs:
         sudo apt-get update && \
         sudo apt-get install -y dotnet-sdk-8.0
       shell: bash
-    - name: Check Terraform version
-      run: terraform --version
-      shell: bash
-    - name: Check Docker version
-      run: docker --version
-      shell: bash
-    - name: Check .NET version
-      run: dotnet --version
+    - name: Check installed versions
+      run: |
+        . "$HOME/.asdf/asdf.sh"
+        . "$HOME/.asdf/completions/asdf.bash"
+        terraform --version
+        docker --version
+        dotnet --version
       shell: bash
