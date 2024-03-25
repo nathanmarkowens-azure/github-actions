@@ -10,8 +10,8 @@ runs:
   steps:
     - shell: bash
       run: |
-          SCRIPT_INPUT="./.github/scripts/${{ inputs.script }}"        
-          if [ -f "$SCRIPT_INPUT.sh" ]; then
+        SCRIPT_INPUT="./.github/scripts/${{ inputs.script }}"        
+        if [ -f "$SCRIPT_INPUT.sh" ]; then
           echo "Running script $SCRIPT_INPUT.sh"
           bash "$SCRIPT_INPUT.sh"
         elif [ -d "$SCRIPT_INPUT" ]; then
