@@ -40,9 +40,9 @@ runs:
             docker save $IMAGE | gzip > "docker-images/${IMAGE_NAME}.tgz"
             echo "Saved $IMAGE as docker-images/${IMAGE_NAME}.tgz"
           done
-          echo "images_exist=true" >> $GITHUB_OUTPUT
+          # echo "images_exist=true" >> $GITHUB_OUTPUT
         else
-          echo "images_exist=false" >> $GITHUB_OUTPUT
+          # echo "images_exist=false" >> $GITHUB_OUTPUT
           echo "No images found tagged with $IMAGE_TAG."
         fi
 
