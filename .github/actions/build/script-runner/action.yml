@@ -2,7 +2,7 @@ name: "Script Runner"
 description: "Runs specified script or all scripts in a specified directory"
 inputs:
   script:
-    description: "The script or directory to run (prebuild, build, postbuild)"
+    description: "The script or directory to run (prebuild, build, postbuild, stage)"
     required: true
 
 runs:
