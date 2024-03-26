@@ -1,0 +1,15 @@
+name: "Terraform apply"
+description: "Check for IAC directory and run terraform apply if exists"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        if [ -d "iac" ]; then
+          cd iac
+          terraform init
+          terraform validate
+          terraform apply "terraform"
+        else
+          echo "Iac directory does not exist. Skipping step.
+        fi

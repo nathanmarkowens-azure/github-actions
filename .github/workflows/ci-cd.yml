@@ -1,5 +1,4 @@
-name: CI-CD
-
+name: ci-cd
 on:
   push:
     branches:
@@ -8,58 +7,79 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      images_exist: ${{ steps.stage_docker_images.outputs.images_exist }}
+      iac_exists: ${{ steps.stage_iac_artifact.outputs.iac_exists }}
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Initialize Environment
-        uses: ./.github/actions/build/initialize_environment
-      - name: Install Tools
-        uses: ./.github/actions/build/install_tools
-      - name: Run Prebuild scripts
+      - name: Initialize environment
+        uses: ./.github/actions/build/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/build/install-tools
+      - name: Run prebuild scripts
         uses: ./.github/actions/build/script-runner
         with:
           script: prebuild
-      - name: Run Build scripts
+      - name: Run build scripts
         uses: ./.github/actions/build/script-runner
         with:
           script: build
-      - name: Run Postbuild scripts
+      - name: Run postbuild scripts
         uses: ./.github/actions/build/script-runner
         with:
           script: postbuild
-      - name: Run Stage scripts
+      - name: Run stage scripts
         uses: ./.github/actions/build/script-runner
         with:
           script: stage
-      - name: Stage Docker images
+      - name: Stage docker images
         uses: ./.github/actions/build/stage-docker-images
         id: stage_docker_images
-      - name: Upload Docker images artifact
+      - name: Upload docker-images artifact
         if: steps.stage_docker_images.outputs.images_exist == 'true'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-images
           path: docker-images/
-      - name: Stage IAC artifact
+      - name: Terraform plan
+        id: terraform_plan
+        uses: ./.github/actions/build/terraform-plan
+      - name: Stage iac artifact
+        if: steps.terraform_plan.outputs.iac_exists == 'true'
         uses: ./.github/actions/build/stage-iac-artifact
-        id: stage_iac_artifact
-      - name: Upload IAC artifact
-        if: steps.stage_iac_artifact.outputs.iac_exists == 'true'
-        uses: actions/upload-artifact@v2
+      - name: Upload iac artifact
+        if: steps.terraform_plan.outputs.iac_exists == 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: iac
           path: iac/
 
-  approval:
-    needs: build
-    runs-on: "composite"
-    steps:
-      - shell: bash
-        run: echo 'Skipping Approval'
-
   deploy:
-    needs: approval
+    needs: build
     runs-on: ubuntu-latest
+    environment: integration
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy/initialize_environment
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download docker-images artifact
+        if: needs.build.outputs.images_exist == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+          path: /docker-images
+      - name: Download iac artifact
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: iac
+          path: /iac
+          merge-multiple: true
+      - name: Initialize environment
+        uses: ./.github/actions/deploy/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/deploy/install-tools
+      - name: Push docker images
+        uses: ./.github/actions/deploy/push-docker-images
+      - name: Terraform apply
+        uses: ./.github/actions/deploy/terraform-apply
