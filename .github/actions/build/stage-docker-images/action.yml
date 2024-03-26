@@ -21,8 +21,14 @@ runs:
 
         # Check for images with the tag and count them
         echo "Checking for images tagged with $IMAGE_TAG..."
-        #IMAGE_COUNT=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | wc -l)
+        # Fetch the list of images tagged with IMAGE_TAG, suppress errors
+        IMAGE_LIST=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" || echo "")
+
+        # Determine the number of images found
         IMAGE_COUNT=0
+        if [ ! -z "$IMAGE_LIST" ]; then
+          IMAGE_COUNT=$(echo "$IMAGE_LIST" | wc -l)
+        fi
         echo "Found $IMAGE_COUNT images tagged with $IMAGE_TAG."
 
         # Proceed if images are found
@@ -35,7 +41,7 @@ runs:
           
           # Save each image to the directory in .tgz format
           echo "Saving images to docker-images directory in .tgz format..."
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" | while read -r IMAGE; do
+          echo "$IMAGE_LIST" | while read -r IMAGE; do
             IMAGE_NAME=$(echo $IMAGE | tr ":" "_" | tr "/" "_")
             echo "Processing image $IMAGE"
             docker save $IMAGE | gzip > "docker-images/${IMAGE_NAME}.tgz"

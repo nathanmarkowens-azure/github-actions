@@ -41,7 +41,7 @@ jobs:
           name: docker-images
           path: docker-images/
       - name: Stage IAC artifact
-        uses: ./github/actions/build/stage-iac-artifact
+        uses: ./.github/actions/build/stage-iac-artifact
         id: stage_iac_artifact
       - name: Upload IAC artifact
         if: steps.stage_iac_artifact.outputs.iac_exists == 'true'
