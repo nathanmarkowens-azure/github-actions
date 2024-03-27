@@ -71,7 +71,7 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ env.AWS_PRIMARY_REGION }}
-          aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
+          ecr_account_id: ${{ env.AWS_ACCOUNT_ID }}
       - name: Terraform init
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/plan/terraform-init
