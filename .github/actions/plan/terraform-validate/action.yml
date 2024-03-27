@@ -3,7 +3,8 @@ description: "Check for IAC directory and run terraform validate if exists"
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: Terraform validate
+      shell: bash
       run: |
         if [ -d "iac" ]; then
           cd iac

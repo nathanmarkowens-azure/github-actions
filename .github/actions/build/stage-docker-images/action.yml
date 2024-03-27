@@ -3,12 +3,13 @@ description: "Saves Docker images tagged with the commit SHA to the docker-image
 outputs:
   images_exist:
     description: "Indicates if the Docker images exist"
-    value: ${{ steps.check_images.outputs.images_exist }}
+    value: ${{ steps.stage_docker_images.outputs.images_exist }}
 runs:
   using: "composite"
   steps:
-    - shell: bash
-      id: check_images
+    - name: Stage docker images
+      id: stage_docker_images
+      shell: bash
       run: |
         # Enable bash debug mode
         set -x

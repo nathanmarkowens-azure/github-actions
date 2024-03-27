@@ -7,8 +7,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: Check iac
       id: check_iac
+      shell: bash
       run: |
         if [ -d "iac" ]; then
           echo "Iac directory found."

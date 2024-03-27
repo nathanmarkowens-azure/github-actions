@@ -3,7 +3,8 @@ description: "Check for IAC directory and compress it if exists"
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: Stage iac directory
+      shell: bash
       run: |
         if [ -d "iac" ]; then
           echo "Staging iac directory."

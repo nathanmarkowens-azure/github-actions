@@ -3,6 +3,7 @@ runs:
   using: "composite"
   steps:
     - name: Install Terraform
+      shell: bash
       run: |
         . "$HOME/.asdf/asdf.sh"
         . "$HOME/.asdf/completions/asdf.bash"
@@ -10,10 +11,9 @@ runs:
         TERRAFORM_VERSION=$(asdf latest terraform)
         asdf install terraform $TERRAFORM_VERSION
         asdf local terraform $TERRAFORM_VERSION
-      shell: bash
     - name: Check installed version
+      shell: bash
       run: |
         . "$HOME/.asdf/asdf.sh"
         . "$HOME/.asdf/completions/asdf.bash"
         terraform --version
-      shell: bash

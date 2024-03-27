@@ -8,7 +8,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: Script Runner
+      shell: bash
       run: |
         SCRIPT_INPUT="./.github/scripts/${{ inputs.script }}"        
         if [ -f "$SCRIPT_INPUT.sh" ]; then
