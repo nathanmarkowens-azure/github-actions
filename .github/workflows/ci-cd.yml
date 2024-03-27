@@ -56,7 +56,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docker-images
-          path: /docker-images
+          path: ${{ github.workspace }}/docker-images
       - name: Initialize environment
         uses: ./.github/actions/shared/initialize-environment
       - name: Install tools
@@ -97,18 +97,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Download docker-images artifact
-        if: needs.build.outputs.images_exist == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-images
-          path: /docker-images
       - name: Download iac artifact
         if: needs.build.outputs.iac_exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: iac
-          path: /iac
+          path: ${{ github.workspace }}/iac
           merge-multiple: true
       - name: Initialize environment
         uses: ./.github/actions/shared/initialize-environment
