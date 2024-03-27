@@ -6,7 +6,7 @@ runs:
     - name: Update apt-get
       shell: bash
       run: |
-        apt-get update -y
+        sudo apt-get update -y
     - name: List environment variables
       shell: bash
       run: env
