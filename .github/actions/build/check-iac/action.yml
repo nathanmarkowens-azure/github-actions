@@ -15,6 +15,6 @@ runs:
           echo "Iac directory found."
           echo "iac_exists=true" >> $GITHUB_OUTPUT
         else
-          echo "Iac directory not found.
+          echo "Iac directory not found."
           echo "iac_exists=false" >> $GITHUB_OUTPUT
         fi
