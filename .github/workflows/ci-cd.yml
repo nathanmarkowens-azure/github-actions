@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       images_exist: ${{ steps.stage_docker_images.outputs.images_exist }}
-      iac_exists: ${{ steps.stage_iac_artifact.outputs.iac_exists }}
+      iac_exists: ${{ steps.check_iac.outputs.iac_exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Initialize environment
-        uses: ./.github/actions/build/initialize-environment
+        uses: ./.github/actions/shared/initialize-environment
       - name: Install tools
-        uses: ./.github/actions/build/install-tools
+        uses: ./.github/actions/shared/install-tools
       - name: Run prebuild scripts
         uses: ./.github/actions/build/script-runner
         with:
@@ -34,29 +34,64 @@ jobs:
         with:
           script: stage
       - name: Stage docker images
-        uses: ./.github/actions/build/stage-docker-images
         id: stage_docker_images
+        uses: ./.github/actions/build/stage-docker-images
       - name: Upload docker-images artifact
         if: steps.stage_docker_images.outputs.images_exist == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: docker-images
           path: docker-images/
+      - name: Check iac
+        id: check_iac
+        uses: ./.github/actions/build/check-iac
+  plan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download docker-images artifact
+        if: needs.build.outputs.images_exist == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+          path: /docker-images
+      - name: Initialize environment
+        uses: ./.github/actions/shared/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/shared/install-tools
+      - name: Install terraform
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/shared/install-terraform
+      - name: Push docker images
+        if: needs.build.outputs.images_exist == 'true'
+        uses: ./.github/actions/plan/push-docker-images
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ env.AWS_PRIMARY_REGION }}
+          aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
+      - name: Terraform init
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-init
+      - name: Terraform validate
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-validate
       - name: Terraform plan
-        id: terraform_plan
-        uses: ./.github/actions/build/terraform-plan
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-plan
       - name: Stage iac artifact
-        if: steps.terraform_plan.outputs.iac_exists == 'true'
-        uses: ./.github/actions/build/stage-iac-artifact
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/stage-iac-artifact
       - name: Upload iac artifact
-        if: steps.terraform_plan.outputs.iac_exists == 'true'
+        if: needs.build.outputs.iac_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: iac
           path: iac/
-
   deploy:
-    needs: build
+    needs: [build, plan]
     runs-on: ubuntu-latest
     environment: integration
     steps:
@@ -76,10 +111,12 @@ jobs:
           path: /iac
           merge-multiple: true
       - name: Initialize environment
-        uses: ./.github/actions/deploy/initialize-environment
+        uses: ./.github/actions/shared/initialize-environment
       - name: Install tools
-        uses: ./.github/actions/deploy/install-tools
-      - name: Push docker images
-        uses: ./.github/actions/deploy/push-docker-images
+        uses: ./.github/actions/shared/install-tools
+      - name: Install terraform
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/shared/install-terraform
       - name: Terraform apply
+        if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/deploy/terraform-apply

@@ -1,4 +1,4 @@
-name: "Push docker images to ECR"
+name: "Push Docker Images to ECR"
 description: "Logs into ECR, creates repositories, and pushes Docker images from .tgz files"
 inputs:
   aws_access_key_id:
@@ -32,16 +32,16 @@ runs:
         for image in docker-images/*.tgz; do
           # Extract image name and tag from filename
           IMAGE_NAME=$(basename "$image" .tgz)
+          echo $IMAGE_NAME
+          # # Load the Docker image from .tgz file
+          # docker load < "$image"
           
-          # Load the Docker image from .tgz file
-          docker load < "$image"
+          # # Create ECR repository if it does not exist
+          # aws ecr describe-repositories --repository-names "$IMAGE_NAME" || aws ecr create-repository --repository-name "$IMAGE_NAME"
           
-          # Create ECR repository if it does not exist
-          aws ecr describe-repositories --repository-names "$IMAGE_NAME" || aws ecr create-repository --repository-name "$IMAGE_NAME"
+          # # Tag the image for ECR
+          # docker tag "$IMAGE_NAME" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME"
           
-          # Tag the image for ECR
-          docker tag "$IMAGE_NAME" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME"
-          
-          # Push the image to ECR
-          docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME"
+          # # Push the image to ECR
+          # docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME"
         done

@@ -7,9 +7,7 @@ runs:
       run: |
         if [ -d "iac" ]; then
           cd iac
-          terraform init
-          terraform validate
           terraform plan -out="terraform"
         else
-          echo "Iac directory does not exist. Skipping step.
+          echo "Iac directory does not exist."
         fi
