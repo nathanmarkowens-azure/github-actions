@@ -41,17 +41,16 @@ runs:
           IMAGE=$(basename "$image" .tgz)
           IMAGE_NAME=${IMAGE%_*}
           IMAGE_TAG=${IMAGE##*_}
-          echo $IMAGE_NAME
-          echo $IMAGE_TAG
-          # # Load the Docker image from .tgz file
-          # docker load < "$image"
+
+          # Load the Docker image from .tgz file
+          docker load < "$image"
           
-          # # Create ECR repository if it does not exist
-          # aws ecr describe-repositories --repository-names "$IMAGE_NAME" || aws ecr create-repository --repository-name "$IMAGE_NAME"
+          # Create ECR repository if it does not exist
+          aws ecr describe-repositories --repository-names "$IMAGE_NAME" || aws ecr create-repository --repository-name "$IMAGE_NAME"
           
-          # # Tag the image for ECR
-          # docker tag "$IMAGE_NAME" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+          # Tag the image for ECR
+          docker tag "$IMAGE_NAME" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
           
-          # # Push the image to ECR
-          # docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+          # Push the image to ECR
+          docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
         done
