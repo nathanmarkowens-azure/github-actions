@@ -40,7 +40,7 @@ runs:
           # Extract image name and tag from filename
           IMAGE=$(basename "$image" .tgz)
           IMAGE_NAME=${IMAGE%_*}
-          IMAGE_TAG=${IMAGE%*_}
+          IMAGE_TAG=${IMAGE##*_}
           echo $IMAGE_NAME
           echo $IMAGE_TAG
           # # Load the Docker image from .tgz file
