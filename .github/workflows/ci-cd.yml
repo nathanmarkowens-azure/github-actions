@@ -118,6 +118,10 @@ jobs:
       - name: Terraform apply
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/deploy/terraform-apply
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ vars.AWS_PRIMARY_REGION }}
       - name: Terraform destroy
         if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'true'
         uses: ./.github/actions/deploy/terraform-destroy
