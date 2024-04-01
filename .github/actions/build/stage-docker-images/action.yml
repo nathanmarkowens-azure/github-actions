@@ -11,9 +11,9 @@ runs:
       id: stage_docker_images
       shell: bash
       run: |
-        # Set image tag to first 6 charactes of commit sha
+        # Set image tag to first 7 charactes of commit sha
         COMMIT_SHA=${GITHUB_SHA:-$(git rev-parse HEAD)}
-        IMAGE_TAG=${COMMIT_SHA:0:6}
+        IMAGE_TAG=${COMMIT_SHA:0:7}
 
         # Check for images with the tag and count them
         echo "Checking for images tagged with $IMAGE_TAG..."

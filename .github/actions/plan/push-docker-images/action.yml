@@ -33,45 +33,45 @@ runs:
       shell: bash
       run: |
         aws ecr get-login-password --region ${{ inputs.aws_region }} | docker login --username AWS --password-stdin ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com
-- name: Load, Tag, and Push Images
-  shell: bash
-  run: |
-    for image in docker-images/*.tgz; do
-      # Extract image name and tag from filename
-      IMAGE=$(basename "$image" .tgz)
-      IMAGE_NAME=${IMAGE%_*}
-      IMAGE_TAG=${IMAGE##*_}
+    - name: Load, Tag, and Push Images
+      shell: bash
+      run: |
+        for image in docker-images/*.tgz; do
+          # Extract image name and tag from filename
+          IMAGE=$(basename "$image" .tgz)
+          IMAGE_NAME=${IMAGE%_*}
+          IMAGE_TAG=${IMAGE##*_}
 
-      # Load the Docker image from .tgz file
-      docker load < "$image"
-      
-      # Create ECR repository if it does not exist
-      if ! aws ecr describe-repositories --repository-names "$IMAGE_NAME" > /dev/null 2>&1; then
-        aws ecr create-repository --repository-name "$IMAGE_NAME"
-        
-        # Define a lifecycle policy to retain only the 3 latest images
-        LIFECYCLE_POLICY='{
-          "rules": [
-            {
-              "rulePriority": 1,
-              "description": "Keep only 3 latest images",
-              "selection": {
-                "tagStatus": "any",
-                "countType": "imageCountMoreThan",
-                "countNumber": 3
-              },
-              "action": {
-                "type": "expire"
-              }
-            }
-          ]
-        }'
-        aws ecr put-lifecycle-policy --repository-name "$IMAGE_NAME" --lifecycle-policy-text "$LIFECYCLE_POLICY"
-      fi
-      
-      # Tag the image for ECR
-      docker tag "$IMAGE_NAME":"$IMAGE_TAG" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
-      
-      # Push the image to ECR
-      docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
-    done
+          # Load the Docker image from .tgz file
+          docker load < "$image"
+          
+          # Create ECR repository if it does not exist
+          if ! aws ecr describe-repositories --repository-names "$IMAGE_NAME" > /dev/null 2>&1; then
+            aws ecr create-repository --repository-name "$IMAGE_NAME"
+            
+            # Define a lifecycle policy to retain only the 3 latest images
+            LIFECYCLE_POLICY='{
+              "rules": [
+                {
+                  "rulePriority": 1,
+                  "description": "Keep only 3 latest images",
+                  "selection": {
+                    "tagStatus": "any",
+                    "countType": "imageCountMoreThan",
+                    "countNumber": 3
+                  },
+                  "action": {
+                    "type": "expire"
+                  }
+                }
+              ]
+            }'
+            aws ecr put-lifecycle-policy --repository-name "$IMAGE_NAME" --lifecycle-policy-text "$LIFECYCLE_POLICY"
+          fi
+          
+          # Tag the image for ECR
+          docker tag "$IMAGE_NAME":"$IMAGE_TAG" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+          
+          # Push the image to ECR
+          docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+        done
