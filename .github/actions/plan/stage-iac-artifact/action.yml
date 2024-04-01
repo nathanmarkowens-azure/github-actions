@@ -10,5 +10,5 @@ runs:
           echo "Staging iac directory."
           tar -czf iac.tgz iac
         else
-          echo "Iac directory not found.
+          echo "Iac directory not found."
         fi
