@@ -186,11 +186,11 @@ resource "aws_lb" "web" {
 }
 
 resource "aws_lb_target_group" "web" {
-  name     = "web"
-  port     = 8080
-  protocol = "HTTP"
+  name        = "web"
+  port        = 8080
+  protocol    = "HTTP"
   target_type = "ip"
-  vpc_id   = aws_vpc.main.id
+  vpc_id      = aws_vpc.main.id
 
   health_check {
     path                = "/"

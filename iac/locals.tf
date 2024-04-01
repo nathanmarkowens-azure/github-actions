@@ -15,11 +15,11 @@ locals {
   account_arn    = lower(data.aws_caller_identity.current.arn)
   primary_region = lower(data.aws_region.primary_region.name)
 
-  name = "web"
+  name     = "web"
   instance = random_string.instance.result
 
 
   tags = {
-    IaC  = "terraform"
+    IaC = "terraform"
   }
 }
