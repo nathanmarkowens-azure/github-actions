@@ -10,6 +10,8 @@ runs:
           cd iac
           echo "Terraform init"
           terraform init -reconfigure
+          echo "Setting permissions..."
+          chmod -R +x .terraform/providers/registry.terraform.io/hashicorp/
           echo "Terraform apply"
           terraform apply "terraform"
         else
