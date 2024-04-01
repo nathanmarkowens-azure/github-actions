@@ -117,7 +117,7 @@ jobs:
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/shared/install-terraform
       - name: Terraform apply
-        if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'false'
+        if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/deploy/terraform-apply
       - name: Terraform destroy
         if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'true'
