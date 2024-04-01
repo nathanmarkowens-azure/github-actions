@@ -9,7 +9,7 @@ runs:
         if [ -d "iac" ]; then
           cd iac
           echo "Terraform init"
-          terraform init -upgrade
+          terraform init -reconfigure
           echo "Terraform apply"
           terraform apply "terraform"
         else
