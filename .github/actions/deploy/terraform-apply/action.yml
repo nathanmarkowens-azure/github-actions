@@ -10,8 +10,6 @@ runs:
           cd iac
           echo "Terraform init"
           terraform init -upgrade
-          echo "Terraform validate"
-          terraform validate
           echo "Terraform apply"
           terraform apply "terraform"
         else
