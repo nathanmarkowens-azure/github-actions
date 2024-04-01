@@ -3,7 +3,12 @@ on:
   push:
     branches:
       - feature/workflows
-
+  workflow_dispatch:
+    inputs:
+      terraform_destroy:
+        description: "Whether to run terraform destroy instead of apply"
+        required: false
+        default: "false"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -112,5 +117,8 @@ jobs:
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/shared/install-terraform
       - name: Terraform apply
-        if: needs.build.outputs.iac_exists == 'true'
+        if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'false'
         uses: ./.github/actions/deploy/terraform-apply
+      - name: Terraform destroy
+        if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'true'
+        uses: ./.github/actions/deploy/terraform-destroy
