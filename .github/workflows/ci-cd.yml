@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       terraform_destroy:
-        description: "Whether to run terraform destroy instead of apply"
+        description: "Terraform destroy"
         required: false
         default: "false"
 jobs:

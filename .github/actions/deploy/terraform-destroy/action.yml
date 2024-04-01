@@ -1,0 +1,16 @@
+name: "Terraform destroy"
+description: "Check for IAC directory and run terraform destroy if exists"
+runs:
+  using: "composite"
+  steps:
+    - name: Terraform destroy
+      shell: bash
+      run: |
+        if [ -d "iac" ]; then
+          cd iac
+          terraform init
+          terraform validate
+          terraform destroy --auto-approve
+        else
+          echo "Iac directory does not exist."
+        fi
