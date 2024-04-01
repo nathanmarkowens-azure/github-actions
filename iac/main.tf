@@ -247,7 +247,7 @@ resource "aws_ecs_service" "web" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.private[0].id, aws_subnet.private[1]]
+    subnets          = [aws_subnet.private[0].id, aws_subnet.private[1].id]
     security_groups  = [aws_security_group.ecs.id]
     assign_public_ip = true
   }
