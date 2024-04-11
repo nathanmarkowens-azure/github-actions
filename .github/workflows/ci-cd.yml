@@ -2,13 +2,16 @@ name: ci-cd
 on:
   push:
     branches:
-      - feature/workflows
+      - main
   workflow_dispatch:
     inputs:
       terraform_destroy:
         description: "Terraform destroy"
         required: false
         default: "false"
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
