@@ -26,19 +26,19 @@ jobs:
       - name: Install tools
         uses: ./.github/actions/shared/install-tools
       - name: Run prebuild scripts
-        uses: ./.github/actions/build/script-runner
+        uses: ./.github/actions/shared/script-runner
         with:
           script: prebuild
       - name: Run build scripts
-        uses: ./.github/actions/build/script-runner
+        uses: ./.github/actions/shared/script-runner
         with:
           script: build
       - name: Run postbuild scripts
-        uses: ./.github/actions/build/script-runner
+        uses: ./.github/actions/shared/script-runner
         with:
           script: postbuild
       - name: Run stage scripts
-        uses: ./.github/actions/build/script-runner
+        uses: ./.github/actions/shared/script-runner
         with:
           script: stage
       - name: Stage docker images
@@ -118,6 +118,10 @@ jobs:
       - name: Install terraform
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/shared/install-terraform
+      - name: Run predeploy scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: predeploy
       - name: Terraform apply
         if: needs.build.outputs.iac_exists == 'true'
         uses: ./.github/actions/deploy/terraform-apply
@@ -125,6 +129,10 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ vars.AWS_PRIMARY_REGION }}
+      - name: Run postdeploy scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: postdeploy
       - name: Terraform destroy
         if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'true'
         uses: ./.github/actions/deploy/terraform-destroy
