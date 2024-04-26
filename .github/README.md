@@ -1,1 +1,1 @@
-![Ci-CD Workflow]([https://](https://github.com/venminder-nathanowens/github-foundations/actions/workflows/ci-cd.yml/badge.svg)
+[![ci-cd](https://github.com/venminder-nathanowens/github-foundations/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/venminder-nathanowens/github-foundations/actions/workflows/ci-cd.yml)
