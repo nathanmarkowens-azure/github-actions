@@ -1,0 +1,77 @@
+name: "Push Docker Images to ECR"
+description: "Logs into ECR, creates repositories, and pushes Docker images from .tgz files"
+inputs:
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    required: true
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    required: true
+  aws_region:
+    description: "AWS Region for ECR"
+    required: true
+  ecr_account_id:
+    description: "AWS Account ID for ECR"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS Credentials
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.aws_access_key_id }}" ] || [ -z "${{ inputs.aws_secret_access_key }}" ] || [ -z "${{ inputs.aws_region }}" ]; then
+          echo "One or more required inputs are missing."
+          exit 1
+        fi
+        echo "Configuring AWS Access Key ID"
+        aws configure set aws_access_key_id ${{ inputs.aws_access_key_id }}
+        echo "Configuring AWS Secret Access Key"
+        aws configure set aws_secret_access_key ${{ inputs.aws_secret_access_key }}
+        echo "Configuring AWS Default Region"
+        aws configure set default.region ${{ inputs.aws_region }}
+    - name: Login to Amazon ECR
+      shell: bash
+      run: |
+        aws ecr get-login-password --region ${{ inputs.aws_region }} | docker login --username AWS --password-stdin ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com
+    - name: Load, Tag, and Push Images
+      shell: bash
+      run: |
+        for image in docker-images/*.tgz; do
+          # Extract image name and tag from filename
+          IMAGE=$(basename "$image" .tgz)
+          IMAGE_NAME=${IMAGE%_*}
+          IMAGE_TAG=${IMAGE##*_}
+
+          # Load the Docker image from .tgz file
+          docker load < "$image"
+          
+          # Create ECR repository if it does not exist
+          if ! aws ecr describe-repositories --repository-names "$IMAGE_NAME" > /dev/null 2>&1; then
+            aws ecr create-repository --repository-name "$IMAGE_NAME"
+            
+            # Define a lifecycle policy to retain only the 3 latest images
+            LIFECYCLE_POLICY='{
+              "rules": [
+                {
+                  "rulePriority": 1,
+                  "description": "Keep only 3 latest images",
+                  "selection": {
+                    "tagStatus": "any",
+                    "countType": "imageCountMoreThan",
+                    "countNumber": 3
+                  },
+                  "action": {
+                    "type": "expire"
+                  }
+                }
+              ]
+            }'
+            aws ecr put-lifecycle-policy --repository-name "$IMAGE_NAME" --lifecycle-policy-text "$LIFECYCLE_POLICY"
+          fi
+          
+          # Tag the image for ECR
+          docker tag "$IMAGE_NAME":"$IMAGE_TAG" ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+          
+          # Push the image to ECR
+          docker push ${{ inputs.ecr_account_id }}.dkr.ecr.${{ inputs.aws_region }}.amazonaws.com/"$IMAGE_NAME":"$IMAGE_TAG"
+        done

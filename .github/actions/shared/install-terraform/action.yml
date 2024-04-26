@@ -1,0 +1,19 @@
+name: Install terraform
+runs:
+  using: "composite"
+  steps:
+    - name: Install Terraform
+      shell: bash
+      run: |
+        . "$HOME/.asdf/asdf.sh"
+        . "$HOME/.asdf/completions/asdf.bash"
+        asdf plugin-add terraform https://github.com/asdf-community/asdf-hashicorp.git
+        TERRAFORM_VERSION=$(asdf latest terraform)
+        asdf install terraform $TERRAFORM_VERSION
+        asdf local terraform $TERRAFORM_VERSION
+    - name: Check installed version
+      shell: bash
+      run: |
+        . "$HOME/.asdf/asdf.sh"
+        . "$HOME/.asdf/completions/asdf.bash"
+        terraform --version

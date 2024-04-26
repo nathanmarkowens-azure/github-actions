@@ -1,0 +1,138 @@
+name: ci-cd
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      terraform_destroy:
+        description: "Terraform destroy"
+        required: false
+        default: "false"
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      images_exist: ${{ steps.stage_docker_images.outputs.images_exist }}
+      iac_exists: ${{ steps.check_iac.outputs.iac_exists }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Initialize environment
+        uses: ./.github/actions/shared/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/shared/install-tools
+      - name: Run prebuild scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: prebuild
+      - name: Run build scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: build
+      - name: Run postbuild scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: postbuild
+      - name: Run stage scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: stage
+      - name: Stage docker images
+        id: stage_docker_images
+        uses: ./.github/actions/build/stage-docker-images
+      - name: Upload docker-images artifact
+        if: steps.stage_docker_images.outputs.images_exist == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: docker-images/
+      - name: Check iac
+        id: check_iac
+        uses: ./.github/actions/build/check-iac
+  plan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download docker-images artifact
+        if: needs.build.outputs.images_exist == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+          path: ${{ github.workspace }}/docker-images
+      - name: Initialize environment
+        uses: ./.github/actions/shared/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/shared/install-tools
+      - name: Install terraform
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/shared/install-terraform
+      - name: Push docker images
+        if: needs.build.outputs.images_exist == 'true'
+        uses: ./.github/actions/plan/push-docker-images
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ vars.AWS_PRIMARY_REGION }}
+          ecr_account_id: ${{ vars.AWS_ACCOUNT_ID }}
+      - name: Terraform init
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-init
+      - name: Terraform validate
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-validate
+      - name: Terraform plan
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/terraform-plan
+      - name: Stage iac artifact
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/plan/stage-iac-artifact
+      - name: Upload iac artifact
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: iac
+          path: iac/
+  deploy:
+    needs: [build, plan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download iac artifact
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: iac
+          path: ${{ github.workspace }}/iac
+          merge-multiple: true
+      - name: Initialize environment
+        uses: ./.github/actions/shared/initialize-environment
+      - name: Install tools
+        uses: ./.github/actions/shared/install-tools
+      - name: Install terraform
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/shared/install-terraform
+      - name: Run predeploy scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: predeploy
+      - name: Terraform apply
+        if: needs.build.outputs.iac_exists == 'true'
+        uses: ./.github/actions/deploy/terraform-apply
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ vars.AWS_PRIMARY_REGION }}
+      - name: Run postdeploy scripts
+        uses: ./.github/actions/shared/script-runner
+        with:
+          script: postdeploy
+      - name: Terraform destroy
+        if: needs.build.outputs.iac_exists == 'true' && github.event.inputs.terraform_destroy == 'true'
+        uses: ./.github/actions/deploy/terraform-destroy

@@ -1,0 +1,11 @@
+name: Install Tools
+runs:
+  using: "composite"
+  steps:
+    - name: Install ASDF
+      shell: bash
+      run: |
+        git config --global advice.detachedHead false
+        git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.0
+        echo ". $HOME/.asdf/asdf.sh" >> $HOME/.bashrc
+        echo ". $HOME/.asdf/completions/asdf.bash" >> $HOME/.bashrc

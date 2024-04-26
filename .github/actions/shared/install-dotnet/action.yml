@@ -1,0 +1,14 @@
+name: Install .NET SDK
+runs:
+  using: "composite"
+  steps:
+    - name: Install .NET SDK
+      shell: bash
+      run: |
+        sudo apt-get update && \
+        sudo apt-get install -y dotnet-sdk-8.0
+    - name: Check installed version
+      shell: bash
+      run: |
+        printf '.NET SDK version: '
+        dotnet --version

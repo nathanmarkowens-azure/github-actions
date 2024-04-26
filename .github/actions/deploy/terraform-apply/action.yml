@@ -1,0 +1,42 @@
+name: "Terraform apply"
+description: "Check for IAC directory and run terraform apply if exists"
+inputs:
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    required: true
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    required: true
+  aws_region:
+    description: "AWS Region for ECR"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS Credentials
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.aws_access_key_id }}" ] || [ -z "${{ inputs.aws_secret_access_key }}" ] || [ -z "${{ inputs.aws_region }}" ]; then
+          echo "One or more required inputs are missing."
+          exit 1
+        fi
+        echo "Configuring AWS Access Key ID"
+        aws configure set aws_access_key_id ${{ inputs.aws_access_key_id }}
+        echo "Configuring AWS Secret Access Key"
+        aws configure set aws_secret_access_key ${{ inputs.aws_secret_access_key }}
+        echo "Configuring AWS Default Region"
+        aws configure set default.region ${{ inputs.aws_region }}
+    - name: Terraform apply
+      shell: bash
+      run: |
+        if [ -d "iac" ]; then
+          cd iac
+          echo "Terraform init"
+          terraform init -reconfigure
+          echo "Setting permissions..."
+          chmod -R +x .terraform/providers/registry.terraform.io/hashicorp/
+          echo "Terraform apply"
+          terraform apply "terraform"
+        else
+          echo "Iac directory does not exist."
+        fi

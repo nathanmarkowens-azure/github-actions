@@ -1,0 +1,12 @@
+name: Initialize Environment
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update apt-get
+      shell: bash
+      run: |
+        sudo apt-get update -y
+    - name: List environment variables
+      shell: bash
+      run: env

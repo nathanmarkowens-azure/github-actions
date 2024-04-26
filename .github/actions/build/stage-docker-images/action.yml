@@ -1,0 +1,52 @@
+name: "Stage Docker Images"
+description: "Saves Docker images tagged with the commit SHA to the docker-images staging directory"
+outputs:
+  images_exist:
+    description: "Indicates if the Docker images exist"
+    value: ${{ steps.stage_docker_images.outputs.images_exist }}
+runs:
+  using: "composite"
+  steps:
+    - name: Stage docker images
+      id: stage_docker_images
+      shell: bash
+      run: |
+        # Set image tag to first 7 charactes of commit sha
+        COMMIT_SHA=${GITHUB_SHA:-$(git rev-parse HEAD)}
+        IMAGE_TAG=${COMMIT_SHA:0:7}
+
+        # Check for images with the tag and count them
+        echo "Checking for images tagged with $IMAGE_TAG..."
+        # Fetch the list of images tagged with IMAGE_TAG, suppress errors
+        IMAGE_LIST=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$IMAGE_TAG" || echo "")
+
+        # Determine the number of images found
+        IMAGE_COUNT=0
+        if [ ! -z "$IMAGE_LIST" ]; then
+          IMAGE_COUNT=$(echo "$IMAGE_LIST" | wc -l)
+        fi
+        echo "Found $IMAGE_COUNT images tagged with $IMAGE_TAG."
+
+        # Proceed if images are found
+        if [ $IMAGE_COUNT -gt 0 ]; then
+          echo "Found images tagged with $IMAGE_TAG."
+          
+          # Create directory for Docker images
+          echo "Creating docker-images directory..."
+          mkdir -p docker-images
+          
+          # Save each image to the directory in .tgz format
+          echo "Saving images to docker-images directory in .tgz format..."
+          echo "$IMAGE_LIST" | while read -r IMAGE; do
+            IMAGE_NAME=$(echo $IMAGE | tr ":" "_" | tr "/" "_")
+            echo "Processing image $IMAGE"
+            docker save $IMAGE | gzip > "docker-images/${IMAGE_NAME}.tgz"
+            echo "Saved $IMAGE as docker-images/${IMAGE_NAME}.tgz"
+          done
+          echo "images_exist=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "images_exist=false" >> "$GITHUB_OUTPUT"
+          echo "No images found tagged with $IMAGE_TAG."
+        fi
+
+        exit 0
